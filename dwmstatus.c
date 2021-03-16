@@ -3,7 +3,7 @@
  * by 20h
  */
 
-#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,11 +17,12 @@
 
 #include <X11/Xlib.h>
 
-char *tzargentina = "America/Buenos_Aires";
-char *tzutc = "UTC";
+#include "pulsevol.c"
+
 char *tzberlin = "Europe/Berlin";
 
 static Display *dpy;
+static char * hname;
 
 char *
 smprintf(char *fmt, ...)
@@ -179,31 +180,34 @@ char * hostname() {
     char hostname[1024];
     hostname[1023] = '\0';
     gethostname(hostname, 1023);
-    return smprintf("Hostname: %s\n", hostname);
+    return smprintf("%s", hostname);
 }
 
 void updateStatus() {
     char *status;
     char *avgs;
     char *tmbln;
-
-    char * hname =  hostname();
+    char *vol;
 
     if (strcmp(hname, "gudrun") == 0) {
+        vol = get_vol();
         avgs = loadavg();
         tmbln = mktimes("%a %d %b %H:%M", tzberlin);
 
-        status = smprintf("L:%s | %s", avgs, tmbln);
+        status = smprintf("V:%s | L:%s | %s", vol, avgs, tmbln);
         setstatus(status);
 
+        free(vol);
         free(avgs);
         free(tmbln);
         free(status);
     }
+
 }
 
 int main(void)
 {
+    hname =  hostname();
     if (!(dpy = XOpenDisplay(NULL))) {
         fprintf(stderr, "dwmstatus: cannot open display.\n");
         return 1;
@@ -214,6 +218,7 @@ int main(void)
     }
 
     XCloseDisplay(dpy);
+    free(hname);
 
     return 0;
 }

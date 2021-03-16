@@ -28,3 +28,9 @@ LDFLAGS = -g ${LIBS}
 # compiler and linker
 CC = cc
 
+
+PULSELIB   =  -lpulse
+PULSEFLAG   =  -libs
+
+LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 ${PULSELIB}
+CPPFLAGS = ${PULSEFLAG} -DVERSION=\"${VERSION}\"
